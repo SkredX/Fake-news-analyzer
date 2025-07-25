@@ -1,16 +1,25 @@
-import pickle
-import os
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
-# Create a folder to save model and vectorizer
-save_dir = r"D:\FastAPI\Fake_News_Project\model"
-os.makedirs(save_dir, exist_ok=True)
+# Extract features and labels
+X = df["text"]
+y = df["label"]
 
-# Save model
-with open(os.path.join(save_dir, "model.pkl"), "wb") as f:
-    pickle.dump(model, f)
+# Split into train and test sets (80% training, 20% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Save vectorizer
-with open(os.path.join(save_dir, "vectorizer.pkl"), "wb") as f:
-    pickle.dump(vectorizer, f)
+# Convert text to TF-IDF vectors
+vectorizer = TfidfVectorizer(stop_words="english", max_df=0.7)
+X_train_vec = vectorizer.fit_transform(X_train)
+X_test_vec = vectorizer.transform(X_test)
 
-print("Model and vectorizer saved successfully!")
+# Train Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train_vec, y_train)
+
+# Predict and evaluate
+y_pred = model.predict(X_test_vec)
+accuracy = accuracy_score(y_test, y_pred)
+print("Model Accuracy:", round(accuracy * 100, 2), "%")
